@@ -1,0 +1,44 @@
+{
+  "variables": {
+    "ip_address": "35.202.153.217",
+    "subnet": "10.0.96.0/22",
+    "dns": "169.254.169.254"
+  },
+  "builders": [
+    {
+      "type": "googlecompute",
+      "project_id": "daughertyk8s-1",
+      "source_image_family": "debian-9",
+      "ssh_username": "packer",
+      "zone": "us-central1-a",
+      "image_family": "vpn"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "{{ template_dir }}/../../certs/vpn/cert.pem",
+      "destination": "/tmp/vpn-cert.pem"
+    },
+    {
+      "type": "file",
+      "source": "{{ template_dir }}/../../certs/vpn/key.pem",
+      "destination": "/tmp/vpn-key.pem"
+    },
+    {
+      "type": "file",
+      "source": "{{ template_dir }}/../../certs/ca/ca.pem",
+      "destination": "/tmp/ca.pem"
+    },
+    {
+      "type": "shell",
+      "script": "bootstrap.sh",
+      "execute_command": "sudo -S /bin/bash -c '{{ .Vars }} {{ .Path }}'",
+      "environment_vars": [
+        "SUBNET={{user `subnet`}}",
+        "IPADDRESS={{user `ip_address`}}",
+        "DNS={{user `dns`}}"
+      ]
+    }
+  ]
+}

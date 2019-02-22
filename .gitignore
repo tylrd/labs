@@ -1,8 +1,12 @@
-terraform/.terraform
+.terraform/**/*
+.terraform/
 terraform/.terraform.tfstate*
 terraform/terraform.tfvars
 terraform/terraform.tfstate*
 
-tls/*
-*.pem
-*.pcap
+certs/ca/*
+certs/vpn/*
+certs/vault/*
+!certs/ca/.keep
+!certs/vpn/.keep
+!certs/vault/.keep
