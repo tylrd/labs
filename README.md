@@ -17,11 +17,10 @@ Playground for:
 
 1. TLS
 
-Create private keys for the CA and the VPN:
+Create (or download) private keys for the CA and the VPN:
 
 ```
-openssl genrsa -out certs/ca/key.pem 2048
-openssl genrsa -out certs/vpn/key.pem 2048
+./bin/init_pki.sh
 ```
 
 2. DNS
