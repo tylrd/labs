@@ -1,47 +1,39 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-[ -z "$1" ] && { echo 'Must provide email'; exit 1; }
+[ -z "$1" ] && { echo 'Must provide username'; exit 1; }
 
-EMAIL=$1
-VPNIP=$(cd "$DIR/../terraform/dns" && terraform output vpn_ip)
-
-echo "VPNIP: $VPNIP"
+USER=$1
+ORGNAME="Daugherty Labs"
+CACERT="$DIR/../certs/ca/ca.pem"
+CAKEY="$DIR/../certs/ca/key.pem"
 
 cd "$DIR/../certs/vpn/client"
 
-echo "Generating client cert for $EMAIL"
+echo "Generating client cert for $USER"
 
-openssl genrsa -out vpn-client.key 2048
-openssl req -new -key vpn-client.key -subj "/C=US/ST=GA/O=$ORGNAME/CN=$EMAIL" -out vpn-client.csr
+# genereate CSR
+openssl genrsa -out "$USER-key.pem" 2048
+openssl req -new -key "$USER-key.pem" -subj "/O=$ORGNAME/CN=$USER" -out "$USER.csr"
 
+# sign CSR with CA
 openssl x509 -req \
-  -extfile <(printf "subjectAltName=IP:$VPNIP") \
+  -extfile <(printf "subjectAltName=DNS:$USER") \
   -days 365 \
-  -in vpn-client.csr \
-  -CA ../../ca/ca.pem \
-  -CAkey ../../ca/key.pem \
+  -in "$USER.csr" \
+  -CA "$CACERT" \
+  -CAkey "$CAKEY" \
   -CAcreateserial \
-  -out vpn-client.pem
-# openssl req -new -sha256 \
-#   -key vpn-client.key \
-#   -subj "/C=US/ST=GA/O=$ORGNAME/CN=$EMAIL" \
-#   -reqexts SAN \
-#   -config <(cat /etc/ssl/openssl.cnf <(printf "\n[SAN]\nsubjectAltName=IP:$VPNIP")) \
-#   -out vpn-client.csr
-openssl pkcs12 -export -out cert.pfx -inkey vpn-client.key -in vpn-client.pem -certfile ../../ca/ca.pem
+  -out "$USER.pem"
 
-# if [ "$(uname)" == "Darwin" ]; then
-#   security add-trusted-cert -d -r trustRoot -k $HOME/Library/Keychains/login.keychain ../../ca/ca.pem
-#   security add-trusted-cert -r trustAsRoot -k $HOME/Library/Keychains/login.keychain vpn-client.pem
-# fi
+# generate p12
+openssl pkcs12 -export \
+  -out "$USER.p12" \
+  -inkey "$USER-key.pem" \
+  -in "$USER.pem" \
+  -certfile "$CACERT"
 
-echo "Succesfully generated client cert at $(pwd)/cert.pfx"
-
-finish() {
-  rm -f "$DIR/../certs/vpn/client/client.cnf"
-}
-trap finish EXIT
+echo "Succesfully generated client cert at $(pwd)/$USER.p12"

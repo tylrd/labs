@@ -6,7 +6,7 @@ apt-get update
 apt-get install -y strongswan iptables-persistent
 
 cat <<EOF > /etc/ipsec.secrets
-$IPADDRESS : RSA "vpn-server-key.pem"
+$IPADDRESS : RSA "vpn-key.pem"
 EOF
 
 cat <<EOF > /etc/ipsec.conf
