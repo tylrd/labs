@@ -128,14 +128,14 @@ resource "google_compute_instance" "vpn" {
 
   metadata_startup_script = "${data.template_file.setup_vpn.rendered}"
 
-  metadata = {
-    foo = "bar"
-  }
-
-  tags = ["ssh", "ipsec"]
+  tags = ["ipsec"]
 
   service_account {
     email  = "${data.terraform_remote_state.iam.service_account_email}"
     scopes = ["compute-rw", "storage-rw"]
   }
+}
+
+output "subnet" {
+  value = "${google_compute_subnetwork.labs.self_link}"
 }

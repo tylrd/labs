@@ -40,7 +40,7 @@ resource "tls_self_signed_cert" "ca" {
   }
 }
 
-# Create the request to sign the cert with our CA
+Create the request to sign the cert with our CA
 resource "tls_cert_request" "vpn_req" {
   key_algorithm   = "RSA"
   private_key_pem = "${file("${path.module}/../../certs/vpn/key.pem")}"
@@ -67,6 +67,7 @@ resource "tls_locally_signed_cert" "vpn_cert" {
 
   allowed_uses = [
     "server_auth",
+    "ipsec_end_system"
   ]
 
   provisioner "local-exec" {

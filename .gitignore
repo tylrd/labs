@@ -10,3 +10,4 @@ certs/vault/*
 !certs/ca/.keep
 !certs/vpn/.keep
 !certs/vault/.keep
+.srl

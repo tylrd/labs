@@ -5,6 +5,14 @@ terraform {
   }
 }
 
+data "terraform_remote_state" "network" {
+  backend = "gcs"
+  config {
+    bucket = "daughertyk8s-1-tf-state"
+    prefix = "network"
+  }
+}
+
 resource "google_compute_instance" "chef" {
   name         = "chef"
   machine_type = "n1-standard-1"
@@ -17,15 +25,23 @@ resource "google_compute_instance" "chef" {
   }
 
   network_interface {
-    subnetwork = "${google_compute_subnetwork.chef.self_link}"
+    subnetwork = "${data.terraform_remote_state.network.subnet}"
   }
 
   metadata = {
     foo = "bar"
   }
 
+  metadata_startup_script =<<EOF
+apt-get update
+apt-get install -y apache2
+cat <<EOF > /var/www/html/index.html
+<html><body><h1>Hello World</h1>
+<p>This page was created from a simple start up script!</p>
+</body></html>
+EOF
+
   service_account {
-    email  = "${google_service_account.demo.email}"
     scopes = ["compute-rw", "storage-rw"]
   }
 }
