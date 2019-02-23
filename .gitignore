@@ -2,7 +2,7 @@
 .terraform/
 terraform/.terraform.tfstate*
 terraform/terraform.tfvars
-terraform/terraform.tfstate*
+*.tfstate*
 
 certs/ca/*
 certs/vpn/*
