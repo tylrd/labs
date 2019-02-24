@@ -6,7 +6,7 @@ apt-get update
 apt-get install -y strongswan iptables-persistent
 
 cat <<EOF > /etc/ipsec.secrets
-$IPADDRESS : RSA "vpn-key.pem"
+$HOSTNAME : RSA "key.pem"
 EOF
 
 cat <<EOF > /etc/ipsec.conf
@@ -27,24 +27,24 @@ conn ikev2-vpn
   dpddelay=60s
   rekey=no
   left=%any
-  leftid=$IPADDRESS
-  leftcert=vpn-cert.pem
+  leftid=@$HOSTNAME
+  leftcert=cert.pem
   leftsendcert=always
   leftsubnet=$SUBNET
   right=%any
   rightid=%any
   rightsourceip=$SUBNET
-  rightdns=$DNS
+  rightdns=169.254.169.254
 EOF
 
-mv /tmp/vpn-cert.pem /etc/ipsec.d/certs/
-mv /tmp/vpn-key.pem /etc/ipsec.d/private/
-mv /tmp/ca.pem /etc/ipsec.d/cacerts/
+mv /tmp/cert.pem /etc/ipsec.d/certs/
+mv /tmp/key.pem /etc/ipsec.d/private/
+mv /tmp/chain.pem /etc/ipsec.d/cacerts/
 
-chown root: /etc/ipsec.d/certs/vpn-cert.pem
-chown root: /etc/ipsec.d/private/vpn-key.pem
-chown root: /etc/ipsec.d/cacerts/ca.pem
-chmod 600 /etc/ipsec.d/private/vpn-key.pem
+chown root: /etc/ipsec.d/certs/cert.pem
+chown root: /etc/ipsec.d/private/key.pem
+chown root: /etc/ipsec.d/cacerts/chain.pem
+chmod 600 /etc/ipsec.d/private/key.pem
 
 echo '
 # vpn metadata startup

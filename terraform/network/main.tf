@@ -128,10 +128,41 @@ resource "google_compute_instance" "vpn" {
 
   metadata_startup_script = "${data.template_file.setup_vpn.rendered}"
 
-  tags = ["ipsec"]
+  tags = ["ssh", "ipsec"]
 
   service_account {
     email  = "${data.terraform_remote_state.iam.service_account_email}"
+    scopes = ["compute-rw", "storage-rw"]
+  }
+}
+
+resource "google_compute_instance" "chef" {
+  name         = "chef"
+  machine_type = "f1-micro"
+  zone         = "us-central1-a"
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-9"
+    }
+  }
+
+  network_interface {
+    subnetwork = "${google_compute_subnetwork.labs.self_link}"
+  }
+
+  metadata_startup_script =<<EOF
+apt-get update
+apt-get install -y apache2
+cat <<EOF > /var/www/html/index.html
+<html><body><h1>Hello World</h1>
+<p>This page was created from a simple start up script!</p>
+</body></html>
+EOF
+
+  allow_stopping_for_update = true
+
+  service_account {
     scopes = ["compute-rw", "storage-rw"]
   }
 }

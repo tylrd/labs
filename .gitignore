@@ -4,10 +4,4 @@ terraform/.terraform.tfstate*
 terraform/terraform.tfvars
 *.tfstate*
 
-certs/ca/*
-certs/vpn/*
-certs/vault/*
-!certs/ca/.keep
-!certs/vpn/.keep
-!certs/vault/.keep
-.srl
+*.pem
